@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>OtoparkBul Admin Panel</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <h1>OtoparkBul Admin Panel</h1>
+    <p>Otoparkları ve park yerlerini yönet.</p>
+  </header>
+  <main>
+    <section class="box">
+      <h2>Yönetici doğrulaması</h2>
+      <label for="adminKey">Yönetici API anahtarı</label>
+      <input id="adminKey" type="password" autocomplete="off" placeholder="Yönetici anahtarını gir">
+      <p>Bu anahtar kaynak koda yazılmaz.</p>
+    </section>
+    <section class="box">
+      <h2>Otopark ekle</h2>
+      <label for="name">Otopark adı</label>
+      <input id="name" maxlength="120" placeholder="Örn. Merkez Otoparkı">
+      <label for="spaces">Kapasite (park yeri sayısı)</label>
+      <input id="spaces" type="number" min="1" step="1" placeholder="Örn. 50">
+      <button id="addParkingButton" type="button">Otopark ekle</button>
+      <div id="createdKeyPanel" class="key-panel" hidden>
+        <strong>Yeni otoparkın API anahtarı</strong>
+        <p>Bu anahtar yalnızca oluşturma yanıtında gösterilir. Güvenli bir yere kaydet.</p>
+        <p id="createdKeyText" class="key-value"></p>
+        <button id="copyCreatedKey" type="button">Anahtarı kopyala</button>
+      </div>
+      <p id="message" class="message info" role="status" aria-live="polite"></p>
+    </section>
+    <section class="box">
+      <h2>Otoparklar ve park yerleri</h2>
+      <p>Park yerini değiştirmek için ilgili otoparkın API anahtarını gir.</p>
+      <div id="list">Otoparklar yükleniyor…</div>
+    </section>
+  </main>
+  <script src="admin.js" defer></script>
+</body>
+</html>

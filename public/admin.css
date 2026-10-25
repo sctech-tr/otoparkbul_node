@@ -1,0 +1,43 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #111318; color: #f4f4f5; }
+body { margin: 0; padding: clamp(18px, 4vw, 36px); max-width: 1100px; margin-inline: auto; }
+h1 { letter-spacing: -.04em; margin-top: 0; }
+.box { background: #1b1c23; border: 1px solid #30313a; padding: 20px; margin-bottom: 20px; border-radius: 14px; }
+input { display: block; width: min(100%, 520px); margin: 8px 0 14px; padding: 10px 12px; border: 1px solid #454650; border-radius: 8px; background: #111318; color: #f4f4f5; font: inherit; }
+label { display: block; color: #d4d4d8; font-size: .9rem; }
+button { border: 1px solid #454650; border-radius: 8px; padding: 9px 12px; background: #292a33; color: #f4f4f5; font: inherit; cursor: pointer; margin: 3px 4px 3px 0; }
+button:hover { background: #353641; } button:focus-visible, input:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+.message { min-height: 1.4em; overflow-wrap: anywhere; } .message.success { color: #4ade80; } .message.error { color: #f87171; } .message.info { color: #a1a1aa; }
+.parking-item { border-top: 1px solid #383943; padding: 18px 0; } .parking-item:first-child { border-top: 0; padding-top: 0; }
+.parking-item h3 { margin: 0 0 6px; } .parking-item p { color: #a1a1aa; }
+.admin-spaces-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 8px; margin: 12px 0 18px; }
+.admin-space { margin: 0; min-height: 44px; } .admin-space.free { color: #86efac; background: #143323; border-color: #24583b; } .admin-space.occupied { color: #fca5a5; background: #3b1b20; border-color: #673038; }
+.danger { color: #fca5a5; border-color: #673038; } .danger:hover { background: #3b1b20; }
+.warning { color: #fbbf24 !important; } .key-panel { border: 1px solid #24583b; background: #143323; border-radius: 10px; padding: 12px; margin-top: 14px; overflow-wrap: anywhere; }
+.key-value { font-family: ui-monospace, monospace; user-select: all; overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
+
+.layout-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin: 12px 0; }
+.layout-controls label { min-width: 100px; }
+.layout-controls input { width: 100px; margin-bottom: 0; }
+.layout-controls button { margin: 0; }
+button.primary { background: #4338ca; border-color: #6366f1; }
+button.primary:hover { background: #4f46e5; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.layout-editor-wrap { margin: 12px 0 20px; padding: 14px; border: 1px solid #383943; border-radius: 12px; background: #15161c; }
+.layout-grid { display: grid; gap: 5px; width: 100%; overflow-x: auto; margin: 12px 0; }
+.layout-cell { aspect-ratio: 1 / 1; min-width: 0; min-height: 38px; padding: 3px; margin: 0; border: 1px solid transparent; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: .8rem; overflow-wrap: anywhere; }
+.layout-cell.type-space { color: #bbf7d0; background: #14532d; border-color: #166534; }
+.layout-cell.type-column { color: #f4f4f5; background: #626977; border-color: #89909b; font-weight: 800; }
+.layout-cell.type-road { color: #303640; background: #d5d9df; border-color: #aeb5bf; }
+.layout-cell.type-blank { color: #71717a; background: #24252d; border-color: #383943; }
+.layout-hint { color: #a1a1aa; font-size: .85rem; }
+.layout-legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 7px; background: #252630; color: #e4e4e7; font-size: .8rem; }
+.legend-item::before { content: ""; width: 10px; height: 10px; border-radius: 3px; display: inline-block; background: #14532d; }
+.legend-item.type-column::before, .legend-column::before { background: #626977; }
+.legend-item.type-road::before, .legend-road::before { background: #d5d9df; }
+.legend-item.type-blank::before, .legend-blank::before { background: #24252d; border: 1px solid #71717a; }
+.legend-space-free::before { background: #14532d; }
+.legend-space-occupied::before { background: #7f1d1d; }
+.layout-controls select { min-width: 180px; max-width: 100%; padding: 10px; border: 1px solid #454650; border-radius: 8px; background: #111318; color: #f4f4f5; font: inherit; }

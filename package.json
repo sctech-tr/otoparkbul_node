@@ -1,0 +1,25 @@
+{
+  "name": "otoparkbul",
+  "version": "1.0.0",
+  "description": "OtoparkBul",
+  "homepage": "https://github.com/sctech-tr/otoparkbul#readme",
+  "bugs": {
+    "url": "https://github.com/sctech-tr/otoparkbul/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sctech-tr/otoparkbul.git"
+  },
+  "license": "MIT",
+  "author": "sc",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}

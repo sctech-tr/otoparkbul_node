@@ -1,0 +1,53 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #111318; color: #f4f4f5; }
+body { margin: 0; padding: clamp(18px, 4vw, 40px); }
+h1 { margin: 0 0 8px; letter-spacing: -.04em; }
+.page-intro { color: #a1a1aa; margin: 0 0 28px; }
+#parkings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 18px; align-items: start; }
+.card { min-width: 0; padding: 22px; border: 1px solid #30313a; border-radius: 16px; background: #1b1c23; }
+.card h2 { margin: 0 0 18px; overflow-wrap: anywhere; font-size: 1.25rem; }
+.counts { color: #d4d4d8; margin: 0 0 5px; }
+.free-count { color: #4ade80; font-weight: 700; margin: 0 0 6px; }
+.occupancy { color: #a1a1aa; font-size: .9rem; margin: 0; }
+.progress { width: 100%; height: 10px; background: #34353e; border-radius: 999px; overflow: hidden; margin-top: 12px; }
+.bar { height: 100%; border-radius: inherit; transition: width .25s ease; }
+.status { font-size: .85rem; margin: 12px 0 18px; }
+.status.available { color: #4ade80; } .status.full { color: #f87171; } .status.incomplete { color: #fbbf24; }
+button { border: 1px solid #454650; border-radius: 9px; padding: 9px 12px; background: #292a33; color: #f4f4f5; font: inherit; cursor: pointer; }
+button:hover { background: #353641; } button:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+.card > button { width: 100%; }
+.spaces-panel { margin-top: 16px; } .spaces-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 8px; }
+.space { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 10px; padding: 10px 5px; font-size: .78rem; }
+.space strong { font-size: 1.05rem; }
+.space.free { color: #86efac; background: #143323; border-color: #24583b; }
+.space.occupied { color: #fca5a5; background: #3b1b20; border-color: #673038; }
+.warning { color: #fbbf24; font-size: .85rem; }
+[hidden] { display: none !important; }
+
+.layout-toggle { width: 100%; }
+.spaces-panel { min-width: 0; margin-top: 16px; }
+.layout-grid { display: grid; gap: 5px; width: 100%; overflow-x: auto; margin: 12px 0; }
+.layout-cell { aspect-ratio: 1 / 1; min-width: 0; min-height: 36px; padding: 3px; margin: 0; border: 1px solid transparent; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: .72rem; overflow-wrap: anywhere; }
+.layout-cell strong { font-size: .9rem; }
+.layout-cell.type-space { color: #bbf7d0; background: #14532d; border-color: #166534; }
+.layout-cell.type-space.is-occupied { color: #fecaca; background: #7f1d1d; border-color: #b91c1c; }
+.layout-cell.type-column { color: #f4f4f5; background: #626977; border-color: #89909b; font-weight: 800; }
+.layout-cell.type-road { color: #303640; background: #d5d9df; border-color: #aeb5bf; }
+.layout-cell.type-blank { color: #71717a; background: #24252d; border-color: #383943; }
+.layout-caption { color: #a1a1aa; font-size: .82rem; margin: 0; }
+.layout-legend { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 7px; background: #252630; color: #e4e4e7; font-size: .78rem; }
+.legend-item::before { content: ""; width: 10px; height: 10px; border-radius: 3px; display: inline-block; background: #14532d; }
+.legend-space-occupied::before { background: #7f1d1d; }
+.legend-column::before { background: #626977; }
+.legend-road::before { background: #d5d9df; }
+.legend-blank::before { background: #24252d; border: 1px solid #71717a; }
+.floor-stats-heading { margin: 22px 0 10px; font-size: 1rem; }
+.floor-stats { display: grid; gap: 9px; }
+.floor-stat { border: 1px solid #30313a; border-radius: 10px; background: #15161c; padding: 10px 12px; }
+.floor-stat-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.floor-stat-label span { color: #d4d4d8; font-variant-numeric: tabular-nums; }
+.floor-stat p { margin: 5px 0 0; color: #a1a1aa; font-size: .82rem; }
+.floor-progress { margin-top: 8px; height: 7px; }
+.floor-map-controls { margin: 12px 0 8px; color: #d4d4d8; font-size: .9rem; }
+.floor-map-controls select { max-width: 100%; margin-left: 6px; padding: 7px 9px; background: #292a33; color: #f4f4f5; border: 1px solid #454650; border-radius: 8px; font: inherit; }
