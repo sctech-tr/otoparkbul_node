@@ -286,18 +286,8 @@ db.prepare(`
 
 app.post('/ee', auth, (req, res) => {
     const { type } = req.body;
-    const plate =
-        typeof req.body.plate === "string"
-            ? req.body.plate.trim().toUpperCase()
-            : "";
-
     const parking = req.parking;
-
-    if (!plate) {
-        return res.status(400).json({
-            error: "Plate is required"
-        });
-    }
+    const spaceNumber = Number(req.body.spaceNumber);
 
     if (type !== "entry" && type !== "exit") {
         return res.status(400).json({
@@ -305,35 +295,13 @@ app.post('/ee', auth, (req, res) => {
         });
     }
 
-    // Giriş ve çıkış işlemlerini atomik yap.
+    if (!Number.isSafeInteger(spaceNumber) || spaceNumber < 1) {
+        return res.status(400).json({
+            error: "A valid spaceNumber is required"
+        });
+    }
+
     const processEntry = db.transaction(() => {
-        const alreadyInside = db.prepare(`
-            SELECT id
-            FROM active_cars
-            WHERE plate = ? AND parking_id = ?
-        `).get(plate, parking.id);
-
-        if (alreadyInside) {
-            return {
-                status: 400,
-                body: { error: "Car already inside" }
-            };
-        }
-
-        const spaceNumber = Number(req.body.spaceNumber);
-
-        if (
-            !Number.isSafeInteger(spaceNumber) ||
-            spaceNumber < 1
-        ) {
-            return {
-                status: 400,
-                body: {
-                    error: "A valid spaceNumber is required"
-                }
-            };
-        }
-
         const space = db.prepare(`
             SELECT id, is_occupied, floor_id
             FROM parking_spaces
@@ -356,14 +324,13 @@ app.post('/ee', auth, (req, res) => {
 
         const entryTime = new Date().toISOString();
 
-        // Boş yeri koşullu güncelle.
         const updatedSpace = db.prepare(`
             UPDATE parking_spaces
             SET is_occupied = 1,
-                plate = ?,
+                plate = NULL,
                 updated_at = ?
             WHERE id = ? AND is_occupied = 0
-        `).run(plate, entryTime, space.id);
+        `).run(entryTime, space.id);
 
         if (updatedSpace.changes !== 1) {
             return {
@@ -375,8 +342,8 @@ app.post('/ee', auth, (req, res) => {
         db.prepare(`
             INSERT INTO active_cars
                 (plate, parking_id, entry_time, space_number, floor_id)
-            VALUES (?, ?, ?, ?, ?)
-        `).run(plate, parking.id, entryTime, spaceNumber, space.floor_id);
+            VALUES ('', ?, ?, ?, ?)
+        `).run(parking.id, entryTime, spaceNumber, space.floor_id);
 
         db.prepare(`
             UPDATE parkings
@@ -394,7 +361,6 @@ app.post('/ee', auth, (req, res) => {
             status: 200,
             body: {
                 message: "Entry successful",
-                plate,
                 parkingId: parking.id,
                 spaceNumber,
                 currentCars
@@ -406,43 +372,37 @@ app.post('/ee', auth, (req, res) => {
         const car = db.prepare(`
             SELECT id, space_number
             FROM active_cars
-            WHERE plate = ? AND parking_id = ?
-        `).get(plate, parking.id);
+            WHERE parking_id = ? AND space_number = ?
+        `).get(parking.id, spaceNumber);
 
         if (!car) {
             return {
                 status: 400,
-                body: { error: "Car not inside" }
+                body: { error: "Parking space is not occupied" }
             };
         }
 
-        // Yeni sisteme kayıtlı araçların park yerini boşalt.
-        if (car.space_number !== null) {
-            const releasedSpace = db.prepare(`
-                UPDATE parking_spaces
-                SET is_occupied = 0,
-                    plate = NULL,
-                    updated_at = ?
-                WHERE parking_id = ?
-                  AND space_number = ?
-                  AND is_occupied = 1
-                  AND plate = ?
-            `).run(
-                new Date().toISOString(),
-                parking.id,
-                car.space_number,
-                plate
-            );
+        const releasedSpace = db.prepare(`
+            UPDATE parking_spaces
+            SET is_occupied = 0,
+                plate = NULL,
+                updated_at = ?
+            WHERE parking_id = ?
+              AND space_number = ?
+              AND is_occupied = 1
+        `).run(
+            new Date().toISOString(),
+            parking.id,
+            spaceNumber
+        );
 
-            if (releasedSpace.changes !== 1) {
-                throw new Error(
-                    "Parking space state is inconsistent"
-                );
-            }
+        if (releasedSpace.changes !== 1) {
+            throw new Error("Parking space state is inconsistent");
         }
 
         db.prepare(`
-            DELETE FROM active_cars WHERE id = ?
+            DELETE FROM active_cars
+            WHERE id = ?
         `).run(car.id);
 
         db.prepare(`
@@ -461,9 +421,8 @@ app.post('/ee', auth, (req, res) => {
             status: 200,
             body: {
                 message: "Exit successful",
-                plate,
                 parkingId: parking.id,
-                spaceNumber: car.space_number,
+                spaceNumber,
                 currentCars
             }
         };
@@ -968,30 +927,11 @@ app.put('/spaces/:spaceNumber', auth, (req, res) => {
         });
     }
 
-    // Plaka verilmişse normalleştir.
-    const plateProvided = Object.prototype.hasOwnProperty.call(
-        req.body,
-        "plate"
-    );
-
-    if (
-        plateProvided &&
-        (typeof req.body.plate !== "string" || !req.body.plate.trim())
-    ) {
-        return res.status(400).json({
-            error: "Invalid plate"
-        });
-    }
-
-    const requestedPlate = plateProvided
-        ? req.body.plate.trim().toUpperCase()
-        : null;
-
     const updatedAt = new Date().toISOString();
 
     const updateSpace = db.transaction(() => {
         const space = db.prepare(`
-            SELECT id, space_number, is_occupied, plate, floor_id
+            SELECT id, floor_id
             FROM parking_spaces
             WHERE parking_id = ? AND space_number = ?
         `).get(parking.id, spaceNumber);
@@ -1003,89 +943,26 @@ app.put('/spaces/:spaceNumber', auth, (req, res) => {
             };
         }
 
+        db.prepare(`
+            UPDATE parking_spaces
+            SET is_occupied = ?,
+                plate = NULL,
+                updated_at = ?
+            WHERE id = ?
+        `).run(isOccupied ? 1 : 0, updatedAt, space.id);
+
         if (isOccupied) {
-            // Zaten dolu bir yerin plakası gönderilmediyse mevcut plakayı koru.
-            const normalizedPlate = requestedPlate || (
-                space.is_occupied ? space.plate : null
-            );
-
-            if (!normalizedPlate) {
-                return {
-                    status: 400,
-                    body: {
-                        error: "A plate is required when occupying a space"
-                    }
-                };
-            }
-
-            // Dolu bir yerdeki aracı başka bir araçla sessizce değiştirme.
-            if (
-                space.is_occupied === 1 &&
-                space.plate &&
-                space.plate !== normalizedPlate
-            ) {
-                return {
-                    status: 409,
-                    body: {
-                        error: "Space is occupied by another plate"
-                    }
-                };
-            }
-
-            // Aynı plaka başka bir yerde veya aktif araç kaydında mı?
-            const carByPlate = db.prepare(`
-                SELECT id, space_number
-                FROM active_cars
-                WHERE parking_id = ? AND plate = ?
-            `).get(parking.id, normalizedPlate);
-
-            if (
-                carByPlate &&
-                carByPlate.space_number !== spaceNumber
-            ) {
-                return {
-                    status: 409,
-                    body: {
-                        error: "This car is already registered in another space"
-                    }
-                };
-            }
-
-            const carAtSpace = db.prepare(`
-                SELECT id, plate
-                FROM active_cars
+            const existingCar = db.prepare(`
+                SELECT id FROM active_cars
                 WHERE parking_id = ? AND space_number = ?
             `).get(parking.id, spaceNumber);
 
-            if (
-                carAtSpace &&
-                carAtSpace.plate !== normalizedPlate
-            ) {
-                return {
-                    status: 409,
-                    body: {
-                        error: "Another active car is registered in this space"
-                    }
-                };
-            }
-
-            // Önce park yerini güncelle.
-            db.prepare(`
-                UPDATE parking_spaces
-                SET is_occupied = 1,
-                    plate = ?,
-                    updated_at = ?
-                WHERE id = ?
-            `).run(normalizedPlate, updatedAt, space.id);
-
-            // Araç henüz kayıtlı değilse aktif araç kaydını da oluştur.
-            if (!carByPlate) {
+            if (!existingCar) {
                 db.prepare(`
                     INSERT INTO active_cars
                         (plate, parking_id, entry_time, space_number, floor_id)
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES ('', ?, ?, ?, ?)
                 `).run(
-                    normalizedPlate,
                     parking.id,
                     updatedAt,
                     spaceNumber,
@@ -1093,33 +970,12 @@ app.put('/spaces/:spaceNumber', auth, (req, res) => {
                 );
             }
         } else {
-            // Park yerini boşalt.
-            db.prepare(`
-                UPDATE parking_spaces
-                SET is_occupied = 0,
-                    plate = NULL,
-                    updated_at = ?
-                WHERE id = ?
-            `).run(updatedAt, space.id);
-
-            // Bu yere bağlı aktif araç kaydını da kaldır.
             db.prepare(`
                 DELETE FROM active_cars
                 WHERE parking_id = ? AND space_number = ?
             `).run(parking.id, spaceNumber);
-
-            // Eski kayıtlarda space_number NULL olabilir.
-            if (space.plate) {
-                db.prepare(`
-                    DELETE FROM active_cars
-                    WHERE parking_id = ?
-                      AND plate = ?
-                      AND space_number IS NULL
-                `).run(parking.id, space.plate);
-            }
         }
 
-        // Sayaç, aktif araç kayıtlarından yeniden hesaplanır.
         const currentCars = db.prepare(`
             SELECT COUNT(*) AS count
             FROM active_cars
@@ -1139,9 +995,6 @@ app.put('/spaces/:spaceNumber', auth, (req, res) => {
                 parkingId: parking.id,
                 spaceNumber,
                 isOccupied,
-                plate: isOccupied
-                    ? (requestedPlate || space.plate)
-                    : null,
                 currentCars,
                 updatedAt
             }
@@ -1159,7 +1012,6 @@ app.put('/spaces/:spaceNumber', auth, (req, res) => {
         });
     }
 });
-
 
 
 app.listen(3000, () => {
