@@ -383,23 +383,27 @@ async function loadParkings() {
           button.textContent = `${floor ? `${floor.name} · ` : ""}${space.number} · ${space.isOccupied ? "Dolu" : "Boş"}`;
           button.addEventListener("click", async () => {
             const key = keyInput.value.trim();
-            if (!key) { say(`${parking.name} için otopark API anahtarını gir.`, "error"); keyInput.focus(); return; }
-            let plate = "";
-            if (!space.isOccupied) {
-              const entered = prompt(`${floor ? floor.name + " · " : ""}${space.number} numaralı yer için plaka gir (örn. 34ABC123):`);
-              if (entered === null) return;
-              plate = entered.trim();
-              if (!plate) return say("Bir yeri dolu işaretlemek için plaka zorunlu.", "error");
+          
+            if (!key) {
+              say(`${parking.name} için otopark API anahtarını gir.`, "error");
+              keyInput.focus();
+              return;
             }
+          
             const payload = { isOccupied: !space.isOccupied };
-            if (!space.isOccupied) payload.plate = plate;
+          
             try {
               await jsonResponse(await fetch(`/spaces/${space.number}`, {
-                method: "PUT", headers: parkingHeaders(key), body: JSON.stringify(payload)
+                method: "PUT",
+                headers: parkingHeaders(key),
+                body: JSON.stringify(payload)
               }));
+          
               say(`${space.number} numaralı yer güncellendi.`, "success");
               await loadParkings();
-            } catch (error) { say(error.message, "error"); }
+            } catch (error) {
+              say(error.message, "error");
+            }
           });
           spacesGrid.append(button);
         }
